@@ -36,10 +36,10 @@ REFLECTOR = MappingProxyType(
 
 ROTORS = MappingProxyType(
     {
-        "I": {"notch_pos": "Q", "wiring": "EKMFLGDQVZNTOWYHXUSPAIBRCJ"},
-        "II": {"notch_pos": "E", "wiring": "AJDKSIRUXBLHWTMCQGZNPYFVOE"},
-        "III": {"notch_pos": "V", "wiring": "BDFHJLCPRTXVZNYEIWGAKMUSQO"},
-        "IV": {"notch_pos": "J", "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB"},
-        "V": {"notch_pos": "Z", "wiring": "VZBRGITYUPSDNHLXAWMJQOFECK"},
+        "I": {"notch": "Q", "wiring": "EKMFLGDQVZNTOWYHXUSPAIBRCJ"},
+        "II": {"notch": "E", "wiring": "AJDKSIRUXBLHWTMCQGZNPYFVOE"},
+        "III": {"notch": "V", "wiring": "BDFHJLCPRTXVZNYEIWGAKMUSQO"},
+        "IV": {"notch": "J", "wiring": "ESOVPZJAYQUIRHXLNFTGKDCMWB"},
+        "V": {"notch": "Z", "wiring": "VZBRGITYUPSDNHLXAWMJQOFECK"},
     }
 )

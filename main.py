@@ -4,9 +4,8 @@ import argparse
 import logging
 import sys
 
-import enigma
-import key_sheet
-
+from enigma import Machine
+from key_sheet import KeySheet
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description="Enigma I Cipher Device Simulator")
@@ -39,15 +38,15 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG if parsed_args.debug else logging.INFO)
 
-    ks = key_sheet.KeySheet(parsed_args)
-    em = enigma.Machine(ks)
+    key_sheet = KeySheet(parsed_args)
+    enigma_machine = Machine(key_sheet)
 
     ciphertext = ""
     for letter in "".join(
         [char.upper() for char in parsed_args.plaintext if char.isalpha()]
     ):
-        em.keyboard(letter)
-        ciphertext += em.lampboard()
+        enigma_machine.keyboard(letter)
+        ciphertext += enigma_machine.lampboard()
 
     i = 0
     for letter in ciphertext:

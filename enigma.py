@@ -1,58 +1,53 @@
-import logging
-from typing import List, Mapping, Union
+from typing import cast, Mapping, Union
 
-import key_sheet
-import wiring
-
-logger = logging.getLogger(__name__)
+from common import logger
+from key_sheet import KeySheet
+from wiring import REFLECTOR, ROTORS
 
 
 class Machine:
-    def __init__(self, key_sheet: key_sheet.KeySheet) -> None:
+    def __init__(self, key_sheet: KeySheet) -> None:
+        self.letter = ""
         self.name = "Enigma I"
-        logger.debug(f"Initializing {self.name} machine ...")
         self.plugboard_wiring = key_sheet.plugboard_wiring
         self.ring_settings = key_sheet.ring_settings
         self.rotor_order = key_sheet.rotor_order
         self.rotor_positions = key_sheet.rotor_positions
-
-        self.letter = ""
         self.scrambled_letter = ""
 
+        logger.debug(f"Initialized {self.name} machine")
+
         self.rotor_r = Rotor(
-            wiring.ROTORS[self.rotor_order[2]]["notch_pos"],
             "right",
             self.rotor_positions[2],
-            wiring.ROTORS[self.rotor_order[2]]["wiring"],
+            ROTORS[self.rotor_order[2]],
         )
         self.rotor_m = Rotor(
-            wiring.ROTORS[self.rotor_order[1]]["notch_pos"],
             "middle",
             self.rotor_positions[1],
-            wiring.ROTORS[self.rotor_order[1]]["wiring"],
+            ROTORS[self.rotor_order[1]],
         )
         self.rotor_l = Rotor(
-            wiring.ROTORS[self.rotor_order[0]]["notch_pos"],
             "left",
             self.rotor_positions[0],
-            wiring.ROTORS[self.rotor_order[0]]["wiring"],
+            ROTORS[self.rotor_order[0]],
         )
         self.plugboard = Plugboard(self.plugboard_wiring)
-        self.reflector = Reflector(wiring.REFLECTOR["wiring"])
+        self.reflector = Reflector(REFLECTOR["wiring"])
 
     def _scramble_letter(self) -> None:
         self.scrambled_letter = self.plugboard.scramble_letter(self.scrambled_letter)
 
         if self.rotor_r.is_notch_aligned:
-            self.rotor_m.shift_position(1)
-            self.rotor_r.shift_position(1)
+            self.rotor_m.step(1)
+            self.rotor_r.step(1)
         elif self.rotor_m.is_notch_aligned:
-            self.rotor_l.shift_position(1)
+            self.rotor_l.step(1)
             # "Double stepping" the middle rotor.
-            self.rotor_m.shift_position(1)
-            self.rotor_r.shift_position(1)
+            self.rotor_m.step(1)
+            self.rotor_r.step(1)
         else:
-            self.rotor_r.shift_position(1)
+            self.rotor_r.step(1)
 
         self.scrambled_letter = self.rotor_r.scramble_letter(self.scrambled_letter)
         self.scrambled_letter = self.rotor_m.scramble_letter(self.scrambled_letter)
@@ -96,27 +91,27 @@ class Reflector:
 
 
 class Rotor:
-    def __init__(self, notch_pos: str, slot: str, start_pos: str, wiring: str) -> None:
-        self.is_notch_aligned = False
-        self.notch_pos = notch_pos
+    def __init__(self, slot: str, position: str, wiring: Mapping[str, str]) -> None:
+        self.is_notch_aligned = cast(bool, None)
+        self.notch = wiring["notch"]
         self.slot = slot
-        self.wiring = wiring
+        self.wiring = wiring["wiring"]
         self.position = self.wiring[0]
-        self._set_starting_position(start_pos)
 
-    def _set_starting_position(self, start_pos: str) -> None:
-        self.shift_position(start_pos)
+        self.step(position)
 
-    def shift_position(self, value: Union[int, str]) -> None:
+    def step(self, value: Union[int, str]) -> None:
         if isinstance(value, str):
             # Calculate the distance between the letters in the wiring.
             value = self.wiring.find(value) - self.wiring.find(self.position)
+
         for i in range(value):
             # Move the first letter to the end.
             self.wiring += self.wiring[0]
             self.wiring = self.wiring[1:]
-            self.position = self.wiring[0]
-            self.is_notch_aligned = True if self.position == self.notch_pos else False
+
+        self.position = self.wiring[0]
+        self.is_notch_aligned = True if self.position == self.notch else False
 
     def scramble_letter(self, letter: str) -> str:
         # Subtracting 65 gives the letter's position in the alphabet.
