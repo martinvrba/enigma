@@ -5,29 +5,47 @@ import logging
 import sys
 
 import enigma
-
-# TODO: Load the settings from a YAML file.
-SETTINGS = {
-    "plugboard_wiring": "AZ,BY,CX",
-    "rotor_order": "I,II,III",
-    "rotor_start_pos": "E,A,B",
-}
+import key_sheet
 
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description="Enigma I Cipher Device Simulator")
-    arg_parser.add_argument("plaintext", help="the input text to process")
+    arg_parser.add_argument("plaintext", help="text to process", type=str)
+    arg_parser.add_argument(
+        "-g",
+        "--rotor-positions",
+        default="EAB",
+        help="Grundstellung (e.g. ABC)",
+        type=str,
+    )
+    arg_parser.add_argument(
+        "--rotor-order", default="I,II,III", help="Walzenlage (e.g. I,II,III)", type=str
+    )
+    arg_parser.add_argument(
+        "--ring-settings",
+        default="01,01,01",
+        help="Ringstellung (e.g. 01,13,26)",
+        type=str,
+    )
+    arg_parser.add_argument(
+        "--plugboard-pairs",
+        help="Steckerbrett (e.g. AZ,BY,CX... up to 10 pairs)",
+        type=str,
+    )
     arg_parser.add_argument(
         "-d", "--debug", action="store_true", help="enable debug mode"
     )
-    args = arg_parser.parse_args()
+    parsed_args = arg_parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+    logging.basicConfig(level=logging.DEBUG if parsed_args.debug else logging.INFO)
 
-    em = enigma.Machine(SETTINGS)
+    ks = key_sheet.KeySheet(parsed_args)
+    em = enigma.Machine(ks)
 
     ciphertext = ""
-    for letter in "".join([char.upper() for char in args.plaintext if char.isalpha()]):
+    for letter in "".join(
+        [char.upper() for char in parsed_args.plaintext if char.isalpha()]
+    ):
         em.keyboard(letter)
         ciphertext += em.lampboard()
 

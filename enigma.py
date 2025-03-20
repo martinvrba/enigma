@@ -1,21 +1,20 @@
 import logging
+from typing import List, Mapping, Union
 
-from typing import Mapping, Union
-
+import key_sheet
 import wiring
 
 logger = logging.getLogger(__name__)
 
+
 class Machine:
-    def __init__(self, settings: Mapping[str, str]) -> None:
+    def __init__(self, key_sheet: key_sheet.KeySheet) -> None:
         self.name = "Enigma I"
         logger.debug(f"Initializing {self.name} machine ...")
-        # Ensure bidirectionality of the plugboard wiring by merging the two dicts.
-        self.plugboard_wiring = {
-            item[0]: item[1] for item in settings["plugboard_wiring"].split(",")
-        } | {item[1]: item[0] for item in settings["plugboard_wiring"].split(",")}
-        self.rotor_start_pos = settings["rotor_start_pos"].split(",")
-        self.rotor_order = settings["rotor_order"].split(",")
+        self.plugboard_wiring = key_sheet.plugboard_wiring
+        self.ring_settings = key_sheet.ring_settings
+        self.rotor_order = key_sheet.rotor_order
+        self.rotor_positions = key_sheet.rotor_positions
 
         self.letter = ""
         self.scrambled_letter = ""
@@ -23,19 +22,19 @@ class Machine:
         self.rotor_r = Rotor(
             wiring.ROTORS[self.rotor_order[2]]["notch_pos"],
             "right",
-            self.rotor_start_pos[2],
+            self.rotor_positions[2],
             wiring.ROTORS[self.rotor_order[2]]["wiring"],
         )
         self.rotor_m = Rotor(
             wiring.ROTORS[self.rotor_order[1]]["notch_pos"],
             "middle",
-            self.rotor_start_pos[1],
+            self.rotor_positions[1],
             wiring.ROTORS[self.rotor_order[1]]["wiring"],
         )
         self.rotor_l = Rotor(
             wiring.ROTORS[self.rotor_order[0]]["notch_pos"],
             "left",
-            self.rotor_start_pos[0],
+            self.rotor_positions[0],
             wiring.ROTORS[self.rotor_order[0]]["wiring"],
         )
         self.plugboard = Plugboard(self.plugboard_wiring)

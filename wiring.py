@@ -2,6 +2,7 @@ from types import MappingProxyType
 
 REFLECTOR = MappingProxyType(
     {
+        # Type B
         "wiring": {
             "A": "Y",
             "B": "R",
